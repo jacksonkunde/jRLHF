@@ -25,7 +25,7 @@ class Jrewarder(nn.Module):
         for block in self.transformer_blocks:
             res = block(res)
         scalar_reward = self.out_proj(self.ln_last(res))
-        return scalar_reward
+        return scalar_reward[:, -1]
 
     def save(self, save_dir: str) -> None:
         """

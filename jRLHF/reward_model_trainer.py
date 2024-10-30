@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from datasets import Dataset
 from jtransformer.trainer import Jtrainer
@@ -15,8 +15,11 @@ class RewardModelTrainer(Jtrainer):
     def _setup_optimizer(self) -> optim.Optimizer:
         return optim.AdamW(self.model.parameters(), lr=self.cfg.lr)
 
-    def val_metric(self, predictions: th.Tensor, targets: th.Tensor) -> float:
-        return nn.functional.mse_loss(predictions, targets).item()
+    def val_metrics(
+        self, predictions: th.Tensor, targets: th.Tensor
+    ) -> Dict[str, float]:
+        val_loss = nn.functional.mse_loss(predictions, targets).item()
+        return {"val_loss": val_loss}
 
     @classmethod
     def create_dataset(
@@ -47,7 +50,7 @@ class RewardModelTrainer(Jtrainer):
             import numpy as np
 
             percentage_reward = np.mean(np.array(examples["input_ids"]) == token_id)
-            return {"percentage_reward": percentage_reward}
+            return {"labels": percentage_reward}
 
         tokenized_dataset = super().create_dataset(
             tokenizer,
