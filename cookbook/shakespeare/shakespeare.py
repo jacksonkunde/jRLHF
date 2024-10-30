@@ -7,7 +7,7 @@ from jtransformer.char_tokenizer import CharTokenizer
 
 
 contex_window_size = 256
-file_path = "/content/cookbook/shakespeare/input.txt"  # add your filepath here
+file_path = "input.txt"
 
 tokenizer = CharTokenizer()
 

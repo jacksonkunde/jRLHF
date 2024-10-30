@@ -39,12 +39,15 @@ class RewardModelTrainer(Jtrainer):
                 # Assume there is a begginning of string token
                 token_id = token_ids[1]
             elif len(token_ids) > 2:
-                Exception("The token_str you passed is more than one token.")
+                raise Exception("The token_str you passed is more than one token.")
             else:
                 token_id = token_ids[0]
 
         def compute_percentage_reward(examples, token_id):
-            return (examples["input_ids"] == token_id).mean(dim=-1)
+            import numpy as np
+
+            percentage_reward = np.mean(np.array(examples["input_ids"]) == token_id)
+            return {"percentage_reward": percentage_reward}
 
         tokenized_dataset = super().create_dataset(
             tokenizer,
