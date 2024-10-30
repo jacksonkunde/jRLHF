@@ -6,13 +6,18 @@ def get_requirements(filename="requirements.txt"):
         return f.read().splitlines()
 
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
     name="jRLHF",
     version="0.1.0",
     author="Jackson Kunde",
-    author_email="jackson.kunde@gmail.com",
+    author_email="jkunde@wisc.edu",
     description="A reward model trainer and rewarder module built using jtransformer.",
-    packages=find_packages(),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    packages=find_packages(include=["jRLHF", "jRLHF.*"]),
     install_requires=get_requirements(),
     python_requires=">=3.8",
     classifiers=[
