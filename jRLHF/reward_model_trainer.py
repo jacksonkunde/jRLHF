@@ -50,7 +50,7 @@ class RewardModelTrainer(Jtrainer):
             import numpy as np
 
             percentage_reward = np.mean(np.array(examples["input_ids"]) == token_id)
-            return {"labels": percentage_reward}
+            return {"label": percentage_reward}
 
         tokenized_dataset = super().create_dataset(
             tokenizer,
