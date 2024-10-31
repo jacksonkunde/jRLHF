@@ -1,14 +1,39 @@
 # Add reward model using the modules from jtransformer, but with linear projection
 import os
 import json
+from typing import Optional, List, Union
 
 from jtransformer.modules import Embed, GPT2PositionalEmbed, TransformerBlock, LayerNorm
 from jtransformer.config import TransformerConfig
 import torch as th
 import torch.nn as nn
+import numpy as np
+
+from abc import ABC, abstractmethod
 
 
-class Jrewarder(nn.Module):
+class Jrewarder(ABC):
+    @abstractmethod
+    def get_reward(self, input_ids: Union[List[int], th.Tensor], **kwargs) -> float:
+        pass
+
+
+class JrewarderSimple(Jrewarder):
+    """Simple rewarder that will count the occurances of a give token in the input sequence."""
+
+    def __init__(self, token_id) -> None:
+        super().__init__()
+        self.token_id = token_id
+
+    def get_reward(self, input_ids: List[int] | th.Tensor, **kwargs) -> float:
+        if isinstance(input_ids, th.Tensor):
+            input_ids = input_ids.tolist()
+        token_count_reward = np.sum(np.array(input_ids) == self.token_id).item()
+        token_count_reward = min(token_count_reward, 100)
+        return token_count_reward
+
+
+class JrewarderLM(nn.Module, Jrewarder):
     def __init__(self, cfg: TransformerConfig) -> None:
         super().__init__()
         self.cfg = cfg
@@ -20,12 +45,19 @@ class Jrewarder(nn.Module):
         self.ln_last = LayerNorm(cfg)
         self.out_proj = nn.Linear(cfg.d_model, 1)
 
-    def forward(self, input_ids) -> th.Tensor:
+    def forward(
+        self, input_ids, attention_mask: Optional[th.Tensor] = None
+    ) -> th.Tensor:
         res = self.embed(input_ids) + self.pos_embed(input_ids)
         for block in self.transformer_blocks:
-            res = block(res)
+            res = block(res, attention_mask=attention_mask)
         scalar_reward = self.out_proj(self.ln_last(res))
         return scalar_reward[:, -1]
+
+    def get_reward(self, input_ids, **kwargs):
+        return self.forward(
+            input_ids, attention_mask=kwargs.get("attention_mask", None)
+        ).item
 
     def save(self, save_dir: str) -> None:
         """
@@ -45,7 +77,7 @@ class Jrewarder(nn.Module):
         print(f"Model and config saved to {save_dir}")
 
     @classmethod
-    def load(cls, load_dir: str) -> "Jrewarder":
+    def load(cls, load_dir: str) -> "JrewarderLM":
         """
         Load the model's state_dict and configuration from the given directory.
         """
