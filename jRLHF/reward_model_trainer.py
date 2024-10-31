@@ -1,8 +1,7 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
-from datasets import Dataset
+from datasets import Dataset, concatenate_datasets
 from jtransformer.trainer import Jtrainer
-
 import torch as th
 from torch import optim, nn
 from transformers import PreTrainedTokenizer
@@ -30,8 +29,8 @@ class RewardModelTrainer(Jtrainer):
         file_path: Optional[str] = None,
         hf_dataset_name: Optional[str] = None,
         tokenizer_kwargs: dict = {},
-        chunk_size: Optional[int] = None,
-        overlap_size: int = 0,
+        chunk_sizes: Optional[List[int]] = None,
+        overlap_sizes: List[int] = [0],
     ) -> Dataset:
         if not token_id:
             assert (
@@ -46,6 +45,11 @@ class RewardModelTrainer(Jtrainer):
             else:
                 token_id = token_ids[0]
 
+        def pad(examples, max_length, pad_token_id):
+            num_pad = max_length - len(examples["input_ids"])
+            examples["input_ids"] = [pad_token_id] * num_pad + examples["input_ids"]
+            return examples
+
         def compute_token_count_reward(examples, token_id):
             import numpy as np
 
@@ -55,14 +59,46 @@ class RewardModelTrainer(Jtrainer):
             token_count_reward = min(token_count_reward, 100)
             return {"label": token_count_reward, "input_ids": examples["input_ids"]}
 
-        tokenized_dataset = super().create_dataset(
-            tokenizer,
-            file_path,
-            hf_dataset_name,
-            tokenizer_kwargs,
-            chunk_size,
-            overlap_size,
-        )
-        return tokenized_dataset.map(
-            compute_token_count_reward, fn_kwargs={"token_id": token_id}
-        )
+        if chunk_sizes:
+            dataset_list = []
+            for i, chunk_size in enumerate(chunk_sizes):
+                # Define the overlap size, if only 1 is given, use that for all
+                if len(overlap_sizes) == 1:
+                    overlap_size = overlap_sizes[0]
+                else:
+                    overlap_size = overlap_sizes[i]
+                tokenized_dataset = super().create_dataset(
+                    tokenizer,
+                    file_path,
+                    hf_dataset_name,
+                    tokenizer_kwargs,
+                    chunk_size,
+                    overlap_size,
+                )
+                dataset_list.append(tokenized_dataset)
+
+            merged_dataset = concatenate_datasets(dataset_list)
+            merged_dataset.map(
+                pad,
+                fn_kwargs={
+                    "pad_token_id": tokenizer.pad_token_id,
+                    "max_length": max(chunk_sizes),
+                },
+            )
+
+            return merged_dataset.map(
+                compute_token_count_reward, fn_kwargs={"token_id": token_id}
+            )
+        else:
+            return (
+                super()
+                .create_dataset(
+                    tokenizer,
+                    file_path,
+                    hf_dataset_name,
+                    tokenizer_kwargs,
+                    chunk_size=None,
+                    overlap_size=0,
+                )
+                .map(compute_token_count_reward, fn_kwargs={"token_id": token_id})
+            )
