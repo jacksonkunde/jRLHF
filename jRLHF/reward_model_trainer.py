@@ -46,11 +46,12 @@ class RewardModelTrainer(Jtrainer):
             else:
                 token_id = token_ids[0]
 
-        def compute_percentage_reward(examples, token_id):
+        def compute_token_count_reward(examples, token_id):
             import numpy as np
 
-            percentage_reward = np.mean(np.array(examples["input_ids"]) == token_id)
-            return {"label": percentage_reward}
+            token_count_reward = np.sum(np.array(examples["input_ids"]) == token_id)
+            token_count_reward = min(token_count_reward, 100)
+            return {"label": token_count_reward, "input_ids": examples["input_ids"]}
 
         tokenized_dataset = super().create_dataset(
             tokenizer,
@@ -60,4 +61,6 @@ class RewardModelTrainer(Jtrainer):
             chunk_size,
             overlap_size,
         )
-        return tokenized_dataset.map(compute_percentage_reward, token_id)
+        return tokenized_dataset.map(
+            compute_token_count_reward, fn_kwargs={"token_id": token_id}
+        )
