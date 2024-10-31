@@ -78,7 +78,7 @@ class RewardModelTrainer(Jtrainer):
                 dataset_list.append(tokenized_dataset)
 
             merged_dataset = concatenate_datasets(dataset_list)
-            merged_dataset.map(
+            merged_dataset = merged_dataset.map(
                 pad,
                 fn_kwargs={
                     "pad_token_id": tokenizer.pad_token_id,
