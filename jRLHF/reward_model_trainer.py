@@ -49,7 +49,9 @@ class RewardModelTrainer(Jtrainer):
         def compute_token_count_reward(examples, token_id):
             import numpy as np
 
-            token_count_reward = np.sum(np.array(examples["input_ids"]) == token_id)
+            token_count_reward = np.sum(
+                np.array(examples["input_ids"]) == token_id
+            ).item()
             token_count_reward = min(token_count_reward, 100)
             return {"label": token_count_reward, "input_ids": examples["input_ids"]}
 
