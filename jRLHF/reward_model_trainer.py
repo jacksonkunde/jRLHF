@@ -17,7 +17,7 @@ class RewardModelTrainer(Jtrainer):
     def val_metrics(
         self, predictions: th.Tensor, targets: th.Tensor
     ) -> Dict[str, float]:
-        val_loss = nn.functional.mse_loss(predictions, targets).item()
+        val_loss = self.criterion(predictions, targets).item()
         return {"val_loss": val_loss}
 
     @classmethod
