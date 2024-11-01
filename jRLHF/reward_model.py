@@ -57,7 +57,7 @@ class JrewarderLM(nn.Module, Jrewarder):
     def get_reward(self, input_ids, **kwargs):
         return self.forward(
             input_ids, attention_mask=kwargs.get("attention_mask", None)
-        ).item
+        ).item()
 
     def save(self, save_dir: str) -> None:
         """

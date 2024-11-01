@@ -262,7 +262,6 @@ class PolicyGradientTrainer(Jtrainer):
             generated_sequences (List[List[int]]): The generated sequences.
             rewards (torch.Tensor): The rewards for each sequence. Shape: [batch_size]
             num_examples (int, optional): Number of examples to print or log. Defaults to 3.
-            log_to_wandb (bool, optional): Whether to log the examples to WandB. Defaults to False.
         """
         num_examples_to_print = min(num_examples, len(generated_sequences))
         examples = []
@@ -283,6 +282,7 @@ class PolicyGradientTrainer(Jtrainer):
 
         if not self.cfg.debug:
             if examples:
+                # TODO: fix wandb logging tables.
                 columns = list(examples[0].keys())
                 table = wandb.Table(columns=columns)
                 for ex in examples:
