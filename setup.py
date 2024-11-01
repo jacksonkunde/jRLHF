@@ -19,6 +19,7 @@ setup(
         "transformers==4.45.2",
         "datasets==3.0.2",
         "wandb==0.18.5",
+        "tabulate==0.9.0",
     ],
     dependency_links=[
         "git+https://github.com/jacksonkunde/jtransformer.git#egg=jtransformer"

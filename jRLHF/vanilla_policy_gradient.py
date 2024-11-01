@@ -1,4 +1,5 @@
 from typing import Dict, List, Tuple, Union
+from tabulate import tabulate
 
 import torch as th
 import torch.nn.functional as F
@@ -252,7 +253,6 @@ class PolicyGradientTrainer(Jtrainer):
         generated_sequences: List[List[int]],
         rewards: th.Tensor,
         num_examples: int = 3,
-        log_to_wandb: bool = False,
     ) -> None:
         """
         Helper function to print or log generated sequences and their rewards during validation.
@@ -289,13 +289,11 @@ class PolicyGradientTrainer(Jtrainer):
             )
             wandb.log({"validation_examples": table}, step=self.n_steps)
         else:
-            # Print examples to console
+            # Print examples
             print("\nValidation Step Examples:")
-            for idx, ex in enumerate(examples):
-                print(f"Example {idx+1}:")
-                print(f"Prompt: {ex['Prompt']}")
-                print(f"Generated: {ex['Generated']}")
-                print(f"Reward: {ex['Reward']}\n")
+            headers = examples[0].keys()  # Extract column names from example keys
+            rows = [ex.values() for ex in examples]  # Extract each row's values
+            print(tabulate(rows, headers, tablefmt="grid"))
 
     def aggregate_metrics(
         self, val_metrics_list: List[Dict[str, float]]

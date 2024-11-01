@@ -4,7 +4,6 @@ def main():
     and a tiny dataset with CharTokenizer.
     """
     import os
-    import torch as th
     from datasets import Dataset
 
     from jtransformer.char_tokenizer import CharTokenizer
@@ -18,7 +17,21 @@ def main():
     tokenizer = CharTokenizer.load(tokenizer_path)
 
     # Create a tiny dataset of starter characters/words
-    starter_texts = ["Hello", "Once", "The", "In", "On", "\n"]
+    starter_texts = [
+        "Hello",
+        "Once",
+        "The",
+        "In",
+        "On",
+        "\n",
+        " ",
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "whom",
+    ]
 
     tokenized_texts = tokenizer(
         starter_texts,
