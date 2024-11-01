@@ -282,12 +282,14 @@ class PolicyGradientTrainer(Jtrainer):
             )
 
         if not self.cfg.debug:
-            # Log examples to WandB
-            table = wandb.Table(
-                data=[list(ex.values()) for ex in examples],
-                columns=list(examples[0].keys()),
-            )
-            wandb.log({"validation_examples": table}, step=self.n_steps)
+            if examples:
+                columns = list(examples[0].keys())
+                table = wandb.Table(columns=columns)
+                for ex in examples:
+                    table.add_data(*ex.values())
+
+                # Log the table to W&B
+                wandb.log({"validation_examples": table}, step=self.n_steps)
         else:
             # Print examples
             print("\nValidation Step Examples:")
