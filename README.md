@@ -69,9 +69,15 @@ jRLHF/
    ```bash
    python3 cookbook/shakespeare/train_reward_model.py
    ```
+      Alternatively, you can use this [Colab notebook](https://colab.research.google.com/drive/1xwncrPPoyiS7SitdSKI_tliMo2VufimU?usp=sharing) to run the training interactively / on a GPU.
+
 
 3. Train the original model with the reward model:
    ```bash
    python3 cookbook/shakespeare/train_reward_model.py
    ```
    Alternatively, you can use this [Colab notebook](https://colab.research.google.com/drive/1qRni0lOenbKo0fpmEkWHqNtrPczUE0d0?usp=sharing) to run the training interactively / on a GPU.
+
+🌟 **Visualizing Training and Validation Rewards During RL-Training**
+
+<div style="display: flex; justify-content: space-between;"> <img src="images/policy_grad_train.png" alt="Training Reward During RL-Training" style="width: 48%;"> <img src="images/policy_grad_val.png" alt="Validation Reward During RL-Training" style="width: 48%;"> </div> 
